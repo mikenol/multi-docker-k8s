@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: postgres-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: postgres
+    template:
+        metadata:
+            labels:
+                component: postgres
+        spec:
+            # Specify the storage we need for postgres from the PVC claim
+            volumes:
+                - name: postgres-storage
+                  # Spacing is VERY IMPORTANT!
+                  # Is not a full tab indent, just two spaces
+                  persistentVolumeClaim:
+                    claimName: database-persistent-volume-claim
+            containers:
+                - name: postgres
+                  # Spacing is VERY IMPORTANT!
+                  # Is not a full tab indent, just two spaces
+                  image: postgres
+                  ports:
+                      - containerPort: 5432
+                  # Mount the volume we defined above
+                  volumeMounts:
+                      # This MUST match the volumes name above
+                      - name: postgres-storage
+                        # Spacing is VERY IMPORTANT!
+                        # Is not a full tab indent, just two spaces
+                        # This is the path to the postgres database on the
+                        # local hard drive
+                        mountPath: /var/lib/postgresql/data
+                        # This is needed only for postgres
+                        # Means any data inside the container that is stored in the
+                        # mount path will be stored inside a folder called postgres
+                        # inside the persistent volume
+                        subPath: postgres
+                  env:
+                      # This is the environment variable postgres is looking for, it is
+                      # not our variable
+                      # Postgres made a change to the variable they look for so this does
+                      # not work anymore
+                      #- name: PGPASSWORD
+                      # Use this one instead
+                      - name: POSTGRES_PASSWORD
+                        # Get the secret key
+                        valueFrom:
+                            secretKeyRef:
+                                # This is the name you gave the secret, not the env variable
+                                name: pgpassword
+                                # This is the the key for the key, value pair
+                                key: PGPASSWORD

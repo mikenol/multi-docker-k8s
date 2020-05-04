@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: worker-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: worker
+    template:
+        metadata:
+            labels:
+                component: worker
+        spec:
+            containers:
+                - name: worker
+                  # Spacing is VERY IMPORTANT!
+                  # Is not a full tab indent, just two spaces
+                  image: mikenol/multi-worker
+                  ports:
+                      - containerPort: 6379
+                  env:
+                      - name: REDIS_HOST
+                        value: redis-cluster-ip-service
+                      - name: REDIS_PORT
+                        value: '6379'

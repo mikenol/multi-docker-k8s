@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: client-deployment
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            component: web
+    template:
+        metadata:
+            labels:
+                component: web
+        spec:
+            containers:
+                - name: client
+                  # Spacing is VERY IMPORTANT!
+                  # Is not a full tab indent, just two spaces
+                  image: mikenol/multi-client
+                  ports:
+                      - containerPort: 3000
+                      # Break it on purpose
+                      #- containerPort: 9999
