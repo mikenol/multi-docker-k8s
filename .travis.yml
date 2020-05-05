@@ -2,8 +2,17 @@ sudo: required
 services:
     - docker
 
+env:
+    global:
+        # Get the latest git commit SHA and store as a variable we ca acces
+        - GIT_SHA=$(git rev-parse HEAD)
+        # Force the Google cloud SDK to supress prompts
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
 before_install:
-    # Access the encrypted JSON file that we uploaded using the Travis CLI
+    # Decrypt the JSON file we uploaded using the Travis CLI
+    # This will create a file called service-account.json
+    # Make sure the -out name matches the one in the gcloud command below
     - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
     # Install the Google Cloud SDK
     - curl https://sdk.cloud.google.com | bash > /dev/null;
@@ -12,37 +21,56 @@ before_install:
     # Install the kubectl CLI
     - gcloud components update kubectl
     # Authorize with Google Cloud via the service account - same as AWS IAM
+    # Make sure the key file is the same name as the -out one in the first step above
     - gcloud auth activate-service-account --key-file service-account.json
-    # Build our image and run the tests
+    # Tell GCP which project and location/region
+    # This is NOT your project name, is the ID
+    - gcloud config set project multi-docker-k8s-276314
+    # Click on Nav menu then Kubernetes Engine to get the Location
+    - gcloud config set compute/zone us-east1-b
+    # Tell it which cluster to work with
+    # Get this from the Name on the Kubernetes Engine page
+    - gcloud container clusters get-credentials multi-cluster
+    # Log in to the docker CLI using creds stored as vars in Travis CI 
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # Build our image and run the tests - the react-test is a made up name
+    # You can use anything you want - you just have to match it below to run the test
     - docker build -t mikenol/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-    #- docker run -e CI=true mikenol/docker-react npm run test -- --coverage
-    #- docker run -e CI=true javelincatcher/multi-docker npm run build
-    # This is not the name of the repo or image, it is what we are testing
-    - docker run -e CI=true mikenol/react-test npm test
+    # This is using the made up image name we build above
+    #- docker run -e CI=true mikenol/react-test npm test
+    # Not sure if we actually need this or not, will see what happens
+    - docker run -e CI=true mikenol/react-test npm test -- --coverage
 
 language: generic
 
-after_success:
-    # Build all of our images
-    - docker build -t mikenol/multi-client ./client
-    - docker build -t mikenol/multi-nginx ./nginx
-    - docker build -t mikenol/multi-server ./server
-    - docker build -t mikenol/multi-worker ./worker
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    # Only do this when we are messing with the master branch
+    on:
+        branch: master
 
-    # Log in to the docker CLI using creds stored as vars in Travis CI 
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# This was used for AWS, leaving it in just cause...
+#after_success:
+#    # Build all of our images
+#    - docker build -t mikenol/multi-client ./client
+#    - docker build -t mikenol/multi-nginx ./nginx
+#    - docker build -t mikenol/multi-server ./server
+#    - docker build -t mikenol/multi-worker ./worker
+#
+#    # Push images to docker hub
+#    - docker push mikenol/multi-client
+#    - docker push mikenol/multi-nginx
+#    - docker push mikenol/multi-server
+#    - docker push mikenol/multi-worker
+#
+#    - kubectl apply -f k8s
 
-    # Push images to docker hub
-    - docker push mikenol/multi-client
-    - docker push mikenol/multi-nginx
-    - docker push mikenol/multi-server
-    - docker push mikenol/multi-worker
-
-    - kubectl apply -f k8s
-
-# AWS instances have been shut down so don't try to deploy
+# This was for AWS and used in the complex-elastic-beanstalk project
+# We are using GCP so this isn't used
+# Leaving it in here anyway
 #deploy:
 #    # Only use if you are getting a missing bucket_name error
 #    # edge: true
@@ -54,6 +82,7 @@ after_success:
 #    bucket_name: "elasticbeanstalk-us-east-2-002528515977"
 #    # This is made up
 #    bucket_path: "docker-multi"
+#    # Only do this when we are messing with the master branch
 #    on:
 #        branch: master
 #    access_key_id: "$AWS_ACCESS_KEY"
