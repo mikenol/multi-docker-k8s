@@ -1,0 +1,63 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    # Access the encrypted JSON file that we uploaded using the Travis CLI
+    - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+    # Install the Google Cloud SDK
+    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    # Source this file
+    - source $HOME/google-cloud-sdk/path.bash.inc
+    # Install the kubectl CLI
+    - gcloud components update kubectl
+    # Authorize with Google Cloud via the service account - same as AWS IAM
+    - gcloud auth activate-service-account --key-file service-account.json
+    # Build our image and run the tests
+    - docker build -t mikenol/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    #- docker run -e CI=true mikenol/docker-react npm run test -- --coverage
+    #- docker run -e CI=true javelincatcher/multi-docker npm run build
+    # This is not the name of the repo or image, it is what we are testing
+    - docker run -e CI=true mikenol/react-test npm test
+
+language: generic
+
+after_success:
+    # Build all of our images
+    - docker build -t mikenol/multi-client ./client
+    - docker build -t mikenol/multi-nginx ./nginx
+    - docker build -t mikenol/multi-server ./server
+    - docker build -t mikenol/multi-worker ./worker
+
+    # Log in to the docker CLI using creds stored as vars in Travis CI 
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+    # Push images to docker hub
+    - docker push mikenol/multi-client
+    - docker push mikenol/multi-nginx
+    - docker push mikenol/multi-server
+    - docker push mikenol/multi-worker
+
+    - kubectl apply -f k8s
+
+# AWS instances have been shut down so don't try to deploy
+#deploy:
+#    # Only use if you are getting a missing bucket_name error
+#    # edge: true
+#    provider: elasticbeanstalk
+#    region: "us-east-2"
+#    app: "multi-docker"
+#    env: "MultiDocker-env"
+#    # Get this from S3 service in AWS for your region
+#    bucket_name: "elasticbeanstalk-us-east-2-002528515977"
+#    # This is made up
+#    bucket_path: "docker-multi"
+#    on:
+#        branch: master
+#    access_key_id: "$AWS_ACCESS_KEY"
+#    # This does not work
+#    #secret_access_key:
+#    #    secure: "$AWS_SECRET_KEY"
+#    secret_access_key: "$AWS_SECRET_KEY"
