@@ -1,4 +1,6 @@
-# Changed per update
+# This does not work locally as cert manager is not installed
+# Therefore, it has been renamed to .lmay (yaml backwards)
+# If you want to use it, rename it to .yaml# Changed per update
 #apiVersion: certmanager.k8s.io/v1alpha1
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
