@@ -13,7 +13,7 @@ function App() {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Fib Calculator version 2 - Kubernetes</h1>
+          <h1 className="App-title">Fib Calculator version 3 - Kubernetes on GCP!</h1>
           <Link to="/">Home</Link>
           <Link to="/otherpage">Other Page</Link>
         </header>
