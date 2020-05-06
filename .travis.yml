@@ -13,24 +13,24 @@ before_install:
     # Decrypt the JSON file we uploaded using the Travis CLI
     # This will create a file called service-account.json
     # Make sure the -out name matches the one in the gcloud command below
-    - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+    #- openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
     # Install the Google Cloud SDK
-    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    #- curl https://sdk.cloud.google.com | bash > /dev/null;
     # Source this file
-    - source $HOME/google-cloud-sdk/path.bash.inc
+    #- source $HOME/google-cloud-sdk/path.bash.inc
     # Install the kubectl CLI
-    - gcloud components update kubectl
+    #- gcloud components update kubectl
     # Authorize with Google Cloud via the service account - same as AWS IAM
     # Make sure the key file is the same name as the -out one in the first step above
-    - gcloud auth activate-service-account --key-file service-account.json
+    #- gcloud auth activate-service-account --key-file service-account.json
     # Tell GCP which project and location/region
     # This is NOT your project name, is the ID
-    - gcloud config set project multi-docker-k8s-276314
+    #- gcloud config set project multi-docker-k8s-276314
     # Click on Nav menu then Kubernetes Engine to get the Location
-    - gcloud config set compute/zone us-east1-b
+    #- gcloud config set compute/zone us-east1-b
     # Tell it which cluster to work with
     # Get this from the Name on the Kubernetes Engine page
-    - gcloud container clusters get-credentials multi-cluster
+    #- gcloud container clusters get-credentials multi-cluster
     # Log in to the docker CLI using creds stored as vars in Travis CI 
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
     # Build our image and run the tests - the react-test is a made up name
