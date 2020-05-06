@@ -1,0 +1,32 @@
+# Changed per update
+#apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+    # Your domain name - like k8s-multi.com - with tls added
+    name: your-domain-com-tls
+spec:
+    # Your domain name - like k8s-multi.com
+    secretName: your-domain-com
+    # This is the reference to the issuer we want to use to get the cert
+    issuerRef:
+        name: letsencrypt-prod
+        # The kind of issuer, from the issuer.yaml
+        kind: ClusterIssuer
+    # Your domain name - like k8s-multi.com
+    commonName: your-domain.com
+    # Set up the DNS for your domain
+    dnsNames:
+        # Regular
+        - your-domain.com
+        # WWW
+        - www.your-domain.com
+    acme:
+        config:
+            - http01:
+                ingressClass: nginx
+              # These are the domains that letsencrypt will contact to verify this is our domain
+              # so you can get the cert
+              domains:
+                - your-domain.com
+                - www.your-domain.com

@@ -12,9 +12,34 @@ metadata:
         #nginx.ingress.kubernetes.io/rewrite-target: /
         # Have to use $1 instead
         nginx.ingress.kubernetes.io/rewrite-target: /$1
+        # Added the following for HTTPS certs
+        # I am not actually using this so will comment them out
+        # This is not used per the update
+        ##certmanager.k8s.io/cluster-issuer: 'letsencrypt-prod'
+        ## Use this one
+        #cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+        ## Redirects http traffic to https
+        #nginx.ingress.kubernetes.io/ssl-redirect: 'true'
 spec:
+    # Added the following for HTTPS certs
+    # I am not actually using this so will comment them out
+    # This is not used per the update
+    #tls:
+    #    - hosts:
+    #        - your-domain.com
+    #        - www.your-domain.com
+    #      # This is the secretName from the certificates.yaml file which
+    #      # should be your domain name like k8s-multi-com
+    #      secretName: your-domain-com
     rules:
-        - http:
+        # Changes for HTTPS certs
+        # This would be commented out/changed but I am not using HTTPS so leaving it uncommented
+        #- http: 
+        - http: 
+        # These are new for HTTPS but I am not using that so commenting them out
+        # This is your domain name like k8s.multi.com and is only for NON www traffic
+        #- host: your-domain.com
+        #  http:
             paths:
                 # The traffic going to the client
                 # This does not work
@@ -32,3 +57,25 @@ spec:
                   backend:
                     serviceName: server-cluster-ip-service
                     servicePort: 5000
+        # These are new for HTTPS but I am not using that so commenting them out
+        # This is your domain name like k8s.multi.com and is only for www traffic
+        #- host: www.your-domain.com
+        #  http:
+        #    paths:
+        #        # The traffic going to the client
+        #        # This does not work
+        #        #- path: /
+        #        # Have to use this instead
+        #        - path: /?(.*)
+        #          backend:
+        #            serviceName: client-cluster-ip-service
+        #            servicePort: 3000
+        #        # The traffic going to the API server
+        #        # This does not work
+        #        #- path: /api/
+        #        # Have to use this instead
+        #        - path: /api/?(.*)
+        #          backend:
+        #            serviceName: server-cluster-ip-service
+        #            servicePort: 5000
+        

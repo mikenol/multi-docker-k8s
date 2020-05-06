@@ -1,0 +1,25 @@
+# Changed per update
+#apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+    name: letsencrypt-prod
+spec:
+    acme:
+        # Link to the letsencrypt API
+        server: https://acme-v02.api.letsencrypt.org/directory
+        # Your/my email address
+        email: 'mikenol@hotmail.com'
+        # This is not the cert secret, it is a secret key that letsencrypt sends
+        # during the validation process
+        # We do not use or access this
+        privateKeySecretRef:
+            name: letsencrypt-prod
+        # Says we want to use the http process to negotiate with letsencrypt
+        # to get our cert
+        # Changed per update, this is no longer used
+        #http01: {}
+        solvers:
+            - http01:
+                ingress:
+                    class: nginx
