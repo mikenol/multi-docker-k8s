@@ -48,6 +48,11 @@ app.get('/', (req, res) => {
 app.get('/values/all', async (req, res) => {
     // Get the values from postgres and return them
     const values = await pgClient.query('SELECT * from values');
+    // Print what was returned to the CLI console, NOT the browser console!
+    //console.log("", values.rows);
+    // Return hard code just for testing
+    //res.send([{ number: 1 }, { number: 2 }, { number: 3 }]);
+    // This is the real code
     res.send(values.rows);
 });
 

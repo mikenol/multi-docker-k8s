@@ -1,0 +1,70 @@
+#apiVersion: skaffold/v1beta1
+apiVersion: skaffold/v2beta2
+kind: Config
+build:
+    local:
+        # Do not push the image to Docker hub or anywhere else
+        push: false
+    artifacts:
+      # Manage the client
+      - image: mikenol/multi-client
+        # This is the source directory
+        context: client
+        docker:
+            dockerfile: Dockerfile.dev
+        # Which mode (rebuild image = 1 or inject changes = 2)
+        # Only use option 2 if you have something like nodemon that
+        # can detect changes and reload
+        # If you are not using these, use option 1
+        # We are using create react app and nodemon so can use 2
+        # Any time it sees files with these extension change, it will
+        # inject them into our image
+        # If we change anything other than these, it will fall back to
+        # 1 and rebuild the image
+        # This was the old way the class used that doesn't work anymore
+        #sync:
+        #    '**/*.js': .
+        #    '**/*.csss': .
+        #    '**/*.html': .
+        # Now have to do it this way
+        sync:
+            infer:
+            - '**/*.js'
+            - '**/*.csss'
+            - '**/*.html'
+      # Manage the server
+      - image: mikenol/multi-server
+        # This is the source directory
+        context: server
+        docker:
+            dockerfile: Dockerfile.dev
+        sync:
+            infer:
+            - '**/*.js'
+      # Manage the worker
+      - image: mikenol/multi-worker
+        # This is the source directory
+        context: worker
+        docker:
+            dockerfile: Dockerfile.dev
+        sync:
+            infer:
+            - '**/*.js'
+# Tell it which YAML files to use
+deploy:
+    kubectl:
+        manifests:
+            # Any thing listed here will be deleted when Skaffold exits!
+            # This can be a good thing when doing local development as
+            # you can pause working on one project and switch to another
+            # However, it will take forever to start next time as it has
+            # to rebuild everthing from scratch
+            # You also DO NOT want to put anything in here that has persistent
+            # data like a volume or database as that will be lost when the
+            # Pod is deleted
+            - k8s/client-deployment.yaml
+            - k8s/server-deployment.yaml
+            - k8s/worker-deployment.yaml
+            # Can also manage services
+            - k8s/client-cluster-ip-service.yaml
+            - k8s/server-cluster-ip-service.yaml
