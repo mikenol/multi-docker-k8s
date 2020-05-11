@@ -33,7 +33,7 @@ before_install:
     # Tell GCP which project and location/region
     # This is NOT your project name, is the ID
     # Commenting out since we shut down our GCP cluster
-    - gcloud config set project multi-docker-k8s-276314
+    - gcloud config set project multi-docker-k8s-276920
     # Click on Nav menu then Kubernetes Engine to get the Location
     # Commenting out since we shut down our GCP cluster
     - gcloud config set compute/zone us-east1-b
