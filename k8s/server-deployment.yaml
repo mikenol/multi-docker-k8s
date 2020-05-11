@@ -16,7 +16,8 @@ spec:
                 - name: server
                   # Spacing is VERY IMPORTANT!
                   # Is not a full tab indent, just two spaces
-                  image: mikenol/multi-server
+                  #image: mikenol/multi-server
+                  image: cygnetops/multi-server
                   ports:
                       - containerPort: 5000
                   env:
