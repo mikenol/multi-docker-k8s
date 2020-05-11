@@ -16,8 +16,13 @@ spec:
                 - name: server
                   # Spacing is VERY IMPORTANT!
                   # Is not a full tab indent, just two spaces
-                  image: mikenol/multi-server
+                  # After deploying to GCP, the "Indexes I have seen" did not work
+                  # I used the TA's image below which worked fine???
                   #image: cygnetops/multi-server
+                  # Per a Q/A post, I changed the pg version in the server package.json
+                  # to 8.0.3 instead of ^8.0.3 which got it working so I can use my
+                  # image!
+                  image: mikenol/multi-server
                   ports:
                       - containerPort: 5000
                   env:
