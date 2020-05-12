@@ -19,10 +19,10 @@ docker push mikenol/multi-worker:$GIT_SHA
 # Apply all of our configs
 # We already installed kubectl in the .travis.yml file
 # Commenting out since we shut down our GCP cluster
-kubectl apply -f k8s
+#kubectl apply -f k8s
 
 # Imperatively set the image using the tags with the SHA
 # Commenting out since we shut down our GCP cluster
-kubectl set image deployments/client-deployment client=mikenol/multi-client:$GIT_SHA
-kubectl set image deployments/server-deployment server=mikenol/multi-server:$GIT_SHA
-kubectl set image deployments/worker-deployment worker=mikenol/multi-worker:$GIT_SHA
+#kubectl set image deployments/client-deployment client=mikenol/multi-client:$GIT_SHA
+#kubectl set image deployments/server-deployment server=mikenol/multi-server:$GIT_SHA
+#kubectl set image deployments/worker-deployment worker=mikenol/multi-worker:$GIT_SHA

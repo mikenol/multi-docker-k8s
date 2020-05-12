@@ -24,18 +24,23 @@ const pgClient = new Pool( {
 
 pgClient.on('error', () => console.log('Lost PG connection'));
 
-// Try this to see if it will create the table
+// Create the table if it does not exist
+// This does not work for some reason when the pg version in the
+// package.json is set to ^8.0.3. Oddly enough, it does work when
+// the version is set to just 8.0.3
+//pgClient.query('CREATE TABLE IF NOT EXISTS values (number INT)')
+//    .catch((err) => console.log(err));
+    
+// This works when the pg version in the package.json is set to ^8.0.3
+// Is most likely because of a race condition where the postgres pod
+// is not running so the connection doesn't happen
+// The on connect will make it wait to connect then run the command
 pgClient.on('connect', () => {
     pgClient
       .query('CREATE TABLE IF NOT EXISTS values (number INT)')
       .catch((err) => console.log(err));
 });
 
-// Create the table if it does not exist
-// This is replaced by the above
-//pgClient.query('CREATE TABLE IF NOT EXISTS values (number INT)')
-//    .catch((err) => console.log(err));
-    
 // Redis (cache) client set up
 const redis = require('redis');
 
